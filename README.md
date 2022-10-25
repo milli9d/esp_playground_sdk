@@ -1,6 +1,33 @@
-# Hello World Example
+# ESP Playground SDK
 
-Starts a FreeRTOS task to print "Hello World"
+A collection of ESP8266 projects for the ESP RTOS SDK.
 
-See the README.md file in the upper level 'examples' directory for more information about examples.
-# esp_playground_sdk
+Runs on a Linux host machine.
+
+***
+##### Build toolchain (perform this first):
+
+```c
+    source ./configure_esp.sh
+```
+
+
+##### Configure ESP SDK:
+
+```c
+    make menuconfig
+```
+
+##### Build app:
+
+```c
+    make app
+```
+
+##### Flash app:
+
+```c
+    make flash
+```
+
+***
