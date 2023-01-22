@@ -10,23 +10,26 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "esp_system.h"
+#include "driver/gpio.h"
+#include "driver/uart.h"
+
 #include "esp_spi_flash.h"
-#include "dht.hpp"
+#include "gpio_base.hpp"
 #include "smart_timer.hpp"
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif
+#define MAIN_TAG "MAIN"
 
-    void app_main()
+namespace ESPP
+{
+    typedef struct led_thread_sys_s
     {
-        printf("Hello world!\n");
-{
-        ESPP::DHT dht;
+        uint64_t delay_ms;
+        gpio_num_t pin;
+        TaskHandle_t handle;
+    } led_thread_sys_t;
 
-        CTCI::smart_timer timer_main("main");
-
+    void print_sys_info(void)
+    {
         /* Print chip information */
         esp_chip_info_t chip_info;
         esp_chip_info(&chip_info);
@@ -37,15 +40,55 @@ extern "C"
 
         printf("%dMB %s flash\n", spi_flash_get_chip_size() / (1024 * 1024),
                (chip_info.features & CHIP_FEATURE_EMB_FLASH) ? "embedded" : "external");
+    }
 
-        for (int i = 3; i >= 0; i--)
+    void led_thread_run(void *args)
+    {
+        led_thread_sys_t *sys = (led_thread_sys_t *)args;
+
+        ESPP::gpio_pin led(sys->pin, GPIO_MODE_OUTPUT, ESPP::gpio_level_e::GPIO_LEVEL_HIGH);
+
+        do
         {
-            printf("Restarting in %d seconds...\n", i);
+            led.toggle();
+            vTaskDelay(sys->delay_ms / portTICK_PERIOD_MS);
+        } while (1);
+    }
+}
+
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
+    void app_main()
+    {
+        printf("Hello world!\n");
+
+        ESPP::print_sys_info();
+
+        ESPP::led_thread_sys_t int_led = {
+            .delay_ms = 100u,
+            .pin = gpio_num_t::GPIO_NUM_0,
+            .handle = NULL};
+        xTaskCreate(ESPP::led_thread_run, "LED", 1024, (void *)&int_led, 2u, &int_led.handle);
+
+        ESPP::led_thread_sys_t ext_led = {
+            .delay_ms = 50u,
+            .pin = gpio_num_t::GPIO_NUM_16,
+            .handle = NULL};
+
+        xTaskCreate(ESPP::led_thread_run, "LED_ext", 1024, (void *)&ext_led, 3u, &ext_led.handle);
+
+        for (int i = 5; i >= 0; i--)
+        {
+            ESP_LOGI(MAIN_TAG, "Restarting in %d seconds...\n", i);
             vTaskDelay(1000 / portTICK_PERIOD_MS);
         }
-        printf("Restarting now.\n");
-        fflush(stdout);
-}
+
+        vTaskDelete(ext_led.handle);
+        vTaskDelete(int_led.handle);
+
         esp_restart();
     }
 
