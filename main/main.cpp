@@ -16,8 +16,15 @@
 #include "esp_spi_flash.h"
 #include "gpio_base.hpp"
 #include "smart_timer.hpp"
+#include "inky_eeprom.hpp"
 
 #define MAIN_TAG "MAIN"
+
+#define INKY_EEPROM_I2C_SCL           GPIO_NUM_5          /* gpio number for I2C master clock */
+#define INKY_EEPROM_I2C_SDA           GPIO_NUM_4          /* gpio number for I2C master data  */
+#define INKY_EEPROM_I2C_NUM           I2C_NUM_0           /* I2C port number for master dev */
+
+
 
 namespace ESPP
 {
@@ -67,18 +74,21 @@ extern "C"
 
         ESPP::print_sys_info();
 
-        ESPP::led_thread_sys_t int_led = {
-            .delay_ms = 100u,
-            .pin = gpio_num_t::GPIO_NUM_0,
-            .handle = NULL};
-        xTaskCreate(ESPP::led_thread_run, "LED", 1024, (void *)&int_led, 2u, &int_led.handle);
+        ESPP::inky_eeprom_sys_t eeprom = {
+            .scl = INKY_EEPROM_I2C_SCL,
+            .sda = INKY_EEPROM_I2C_SDA,
+            .i2c_port = INKY_EEPROM_I2C_NUM
+        };
+
+        ESPP::inky_eeprom reader(eeprom);
+
 
         ESPP::led_thread_sys_t ext_led = {
             .delay_ms = 50u,
             .pin = gpio_num_t::GPIO_NUM_16,
             .handle = NULL};
 
-        xTaskCreate(ESPP::led_thread_run, "LED_ext", 1024, (void *)&ext_led, 3u, &ext_led.handle);
+        xTaskCreate(ESPP::led_thread_run, "LED_ext", 1024u, (void *)&ext_led, 3u, &ext_led.handle);
 
         for (int i = 5; i >= 0; i--)
         {
@@ -87,8 +97,6 @@ extern "C"
         }
 
         vTaskDelete(ext_led.handle);
-        vTaskDelete(int_led.handle);
-
         esp_restart();
     }
 

@@ -8,7 +8,7 @@ export IDF_PATH="$(pwd)/ESP8266_RTOS_SDK"
 echo ${IDF_PATH}
 
 # install and import ESP IDF tools
-./ESP8266_RTOS_SDK/install.sh
+${IDF_PATH}/install.sh
 
 # get xtensa-tools
 wget https://dl.espressif.com/dl/xtensa-lx106-elf-gcc8_4_0-esp-2020r3-linux-amd64.tar.gz

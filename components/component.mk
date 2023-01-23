@@ -3,9 +3,9 @@
 #
 # (Uses default behaviour of compiling all source files in directory, adding 'include' to include path.)
 
-COMPONENT_ADD_INCLUDEDIRS += drivers/dht/include wrappers/gpio_base/include utils/smart_timer/include
+COMPONENT_ADD_INCLUDEDIRS += drivers/dht/include drivers/inky/include wrappers/gpio_base/include utils/smart_timer/include
 
-COMPONENT_SRCDIRS += drivers/dht wrappers/gpio_base utils/smart_timer
+COMPONENT_SRCDIRS += drivers/dht drivers/inky/src wrappers/gpio_base utils/smart_timer
 
 # COMPONENT_DIRS += drivers wrappers utils
 
