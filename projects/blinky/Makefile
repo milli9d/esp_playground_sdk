@@ -3,7 +3,7 @@
 # project subdirectory.
 #
 
-PROJECT_NAME := esp_playground_sdk
+PROJECT_NAME := blinky
 
+include $(PWD)/../../mk/esp_playground_init.mk
 include $(IDF_PATH)/make/project.mk
-
