@@ -20,6 +20,8 @@
 #include "gpio_base.hpp"
 #include "smart_timer.hpp"
 
+#include "espp_common.hpp"
+
 #define MAIN_TAG "MAIN"
 
 namespace espp {
@@ -64,7 +66,7 @@ extern "C" {
 
 void app_main()
 {
-    printf("Hello world!\n");
+    _banner("BLINKY");
 
     espp::print_sys_info();
 
