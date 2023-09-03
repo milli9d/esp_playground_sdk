@@ -7,7 +7,7 @@
 #include <cstdio>
 #include <string>
 
-namespace CTCI {
+namespace espp {
 class smart_timer
 {
   public:
@@ -22,7 +22,7 @@ class smart_timer
 
   private:
     const std::string _name{};
-    std::chrono::time_point<std::chrono::steady_clock> _start{};
+    std::chrono::time_point<std::chrono::high_resolution_clock> _start{};
 };
 
-} // namespace CTCI
+} // namespace espp

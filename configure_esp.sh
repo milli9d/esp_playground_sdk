@@ -18,9 +18,9 @@ rm -rf build
 mkdir -p build
 tar -xzf xtensa*.gz -C $(pwd)/build
 
+# remove remnant zip file
+rm -rf xtensa-*.gz*
+
 # export PATH to xtensa
 export PATH="$PATH:$(pwd)/build/xtensa-lx106-elf/bin"
 echo ${PATH} | grep xtensa
-
-# remove remnant zip file
-rm -rf xtensa-*.gz*

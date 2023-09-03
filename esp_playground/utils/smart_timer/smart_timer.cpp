@@ -7,22 +7,22 @@
 
 #include "smart_timer.hpp"
 
-namespace CTCI {
+namespace espp {
 /* constructor */
 smart_timer::smart_timer(std::string name) : _name(name)
 {
-    _start = std::chrono::steady_clock::now();
+    _start = std::chrono::high_resolution_clock::now();
 }
 
 smart_timer::~smart_timer()
 {
-    std::chrono::time_point<std::chrono::steady_clock> _end = std::chrono::steady_clock::now();
+    std::chrono::time_point<std::chrono::high_resolution_clock> _end = std::chrono::high_resolution_clock::now();
 
     auto time_elapsed = _end - _start;
 
-    uint64_t us = std::chrono::duration_cast<std::chrono::microseconds>(time_elapsed).count();
+    uint32_t ms = std::chrono::duration_cast<std::chrono::milliseconds>(time_elapsed).count();
 
-    printf("%s took %" PRIu64 " us \n", _name.c_str(), us);
+    printf("%s took %d ms\n", _name.c_str(), ms);
 }
 
-} // namespace CTCI
+} // namespace espp
