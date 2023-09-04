@@ -20,13 +20,11 @@
 #include "gpio_base.hpp"
 
 #include "espp_common.hpp"
+#include "espp_shell.hpp"
 #include "led_thread.hpp"
 #include "smart_timer.hpp"
 
 #define MAIN_TAG "MAIN"
-
-#define SLEEP_PERIOD   2u
-#define RESTART_PERIOD 10u
 
 #ifdef __cplusplus
 extern "C" {
@@ -42,6 +40,7 @@ void app_main()
 
     /* pretty print intro */
     espp::_banner("WIFI TESTBENCH");
+
     /* print System information */
     espp::print_sys_info();
 
@@ -49,23 +48,16 @@ void app_main()
     espp::led_thread_sys_t int_led = { .delay_ms = 100u, .pin = gpio_num_t::GPIO_NUM_4, .handle = NULL };
     xTaskCreate(espp::led_thread_run, "LED", 1024, (void*)&int_led, 2u, &int_led.handle);
 
-    {
-        /* init wifi base */
-        espp::wifi_base _wifi = espp::wifi_base();
+    /* init shell */
+    espp::espp_shell _shell;
 
-        _wifi.scan_ap();
+    /* init wifi base */
+    espp::wifi_base _wifi = espp::wifi_base();
 
-        /* sleep for a while */
-        for (int i = RESTART_PERIOD; i >= 0; i -= SLEEP_PERIOD) {
-            ESP_LOGI(MAIN_TAG, "Restarting in %d seconds...\n", i);
-            sleep(SLEEP_PERIOD);
-        }
-    }
-
-    /* remove threads */
-    vTaskDelete(int_led.handle);
-
-    esp_restart();
+    /* yield main task */
+    while (1) {
+        vTaskDelay(1000 / portTICK_RATE_MS);
+    };
 }
 
 #ifdef __cplusplus

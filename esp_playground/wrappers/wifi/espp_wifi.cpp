@@ -26,14 +26,16 @@
 
 #define LOG_LOCAL_LEVEL ESP_LOG_VERBOSE
 #include <esp_log.h>
-#define ESPP_WIFI_BASE_TAG "ESP Wifi Base"
+#define ESPP_WIFI_BASE_TAG "ESPP Wifi Base"
 
 #include "espp_wifi.hpp"
 #include "smart_timer.hpp"
 
 namespace espp {
 
+/* @todo figure out a better way to do this */
 SemaphoreHandle_t wifi_base::_wifi_scan_complete_sem = xSemaphoreCreateBinary();
+wifi_base* espp::wifi_base::_this;
 
 /**
  * @brief Handles wifi events
@@ -87,6 +89,37 @@ void wifi_base::_ip_event_handler(void* arg, esp_event_base_t event_base, int32_
 }
 
 /* ========================================================================= */
+/* Shell Commands */
+/* ========================================================================= */
+/**
+ * @brief Scan AP shell command
+ * @param argc
+ * @param argv
+ * @return
+ */
+int wifi_base::_scan_ap_shell(int argc, char** argv)
+{
+    ESP_ERROR_CHECK(_this == NULL);
+    _this->scan_ap();
+    return 0;
+}
+
+/**
+ * @brief Init shell commands
+ */
+void wifi_base::_init_shell()
+{
+    /* register wifi_scan command */
+    esp_console_cmd_t cmd{};
+
+    cmd.command = "wifi_scan";
+    cmd.help = "Scan available APs";
+    cmd.func = &wifi_base::_scan_ap_shell;
+
+    ESP_ERROR_CHECK_WITHOUT_ABORT(esp_console_cmd_register(&cmd));
+}
+
+/* ========================================================================= */
 /* Public API */
 /* ========================================================================= */
 
@@ -100,14 +133,13 @@ esp_err_t wifi_base::scan_ap()
     ESP_ERROR_CHECK_WITHOUT_ABORT(esp_wifi_start());
 
     /* configure scan */
-    wifi_scan_config_t cfg = {
-        .ssid = NULL,
-        .bssid = NULL,
-        .show_hidden = false,
-        .scan_type = WIFI_SCAN_TYPE_ACTIVE,
-    };
+    wifi_scan_config_t cfg{};
+    cfg.ssid = NULL;
+    cfg.bssid = NULL;
+    cfg.show_hidden = false;
 
     /* set active scan time threshold */
+    cfg.scan_type = WIFI_SCAN_TYPE_ACTIVE;
     cfg.scan_time.active.max = 250u;
     cfg.scan_time.active.min = 100u;
 
@@ -148,6 +180,9 @@ esp_err_t wifi_base::scan_ap()
  */
 wifi_base::wifi_base()
 {
+    /* bind static reference for shell command usage */
+    _this = this;
+
     /* bind default config to an rvalue */
     wifi_init_config_t conf = WIFI_INIT_CONFIG_DEFAULT();
 
@@ -164,6 +199,9 @@ wifi_base::wifi_base()
     /* init WiFi event handlers */
     ESP_ERROR_CHECK(esp_event_handler_register(WIFI_EVENT, ESP_EVENT_ANY_ID, _wifi_event_handler, NULL));
     ESP_ERROR_CHECK(esp_event_handler_register(IP_EVENT, IP_EVENT_STA_GOT_IP, _ip_event_handler, NULL));
+
+    /* initialize shell commands */
+    _init_shell();
 
     ESP_LOGI(ESPP_WIFI_BASE_TAG, "Wifi subsystem up!");
 }

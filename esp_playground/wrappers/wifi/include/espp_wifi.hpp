@@ -11,7 +11,9 @@
 
 #include <stdio.h>
 
-#include "esp_wifi.h"
+#include <esp_console.h>
+#include <esp_wifi.h>
+
 #include "freertos/event_groups.h"
 
 namespace espp {
@@ -46,11 +48,29 @@ class wifi_base
      */
     static void _ip_event_handler(void* arg, esp_event_base_t event_base, int32_t event_id, void* event_data);
 
+    /* ===================================================================== */
+    /* Shell Commands */
+    /* ===================================================================== */
+
+    /**
+     * @brief
+     * @param argc
+     * @param argv
+     * @return
+     */
+    static int _scan_ap_shell(int argc, char** argv);
+
+    /**
+     * @brief Init shell commands
+     */
+    void _init_shell();
+
   public:
     /* ===================================================================== */
     /* Constructors/Destructors */
     /* ===================================================================== */
     static SemaphoreHandle_t _wifi_scan_complete_sem;
+    static wifi_base* _this;
 
     /**
      * @brief
