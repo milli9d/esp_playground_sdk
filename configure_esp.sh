@@ -7,6 +7,20 @@ usage() {
     echo "       No argument or any other argument - Only exports PATH."
 }
 
+# Function to create or activate a virtual environment
+create_or_activate_venv() {
+    if [ -d ".venv" ]; then
+        # Activate the existing virtual environment
+        source .venv/bin/activate
+    else
+        # Create a Python 3 virtual environment
+        python3 -m venv .venv
+
+        # Activate the newly created virtual environment
+        source .venv/bin/activate
+    fi
+}
+
 # Update all sub-repos
 git submodule update --init --recursive
 
@@ -29,13 +43,24 @@ if [ "$#" -eq 1 ] && [ "$1" = "install" ]; then
 
     # Remove remnant zip file
     rm -rf xtensa-*.gz*
+
+    # Create or activate the virtual environment
+    create_or_activate_venv
+
+    # Install requirements.txt under ESP8266_RTOS_SDK directory
+    pip install -r ESP8266_RTOS_SDK/requirements.txt
+
+    # Add ESP IDF path to the venv permanently
+    echo "export IDF_PATH=${IDF_PATH}" >> .venv/bin/activate
+    echo "export PATH="$PATH:$(pwd)/build/xtensa-lx106-elf/bin"" >> .venv/bin/activate
+
 elif [ "$#" -eq 1 ] && [ "$1" != "install" ]; then
     usage
     exit 1
+else
+    # Create or activate the virtual environment if no argument is provided
+    create_or_activate_venv
 fi
-
-# Export PATH to xtensa by default
-export PATH="$PATH:$(pwd)/build/xtensa-lx106-elf/bin"
 
 # Validate if PATH contains xtensa
 echo "PATH set to: ${PATH}"
