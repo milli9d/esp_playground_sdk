@@ -15,51 +15,34 @@ create_or_activate_venv() {
     else
         # Create a Python 3 virtual environment
         python3 -m venv .venv
-
+        
         # Activate the newly created virtual environment
         source .venv/bin/activate
     fi
 }
+# Create or activate the virtual environment
+# create_or_activate_venv
 
 # Update all sub-repos
 git submodule update --init --recursive
 
 # Import paths to ESP toolchains
-export IDF_PATH="$(pwd)/ESP8266_RTOS_SDK"
+export IDF_PATH="$(pwd)/ESP32_RTOS_SDK"
+
 echo "IDF_PATH set to: ${IDF_PATH}"
 
 # If "install" argument is passed, then download and install
 if [ "$#" -eq 1 ] && [ "$1" = "install" ]; then
     # Install and import ESP IDF tools
-    ./ESP8266_RTOS_SDK/install.sh
-
-    # Download xtensa-tools
-    wget https://dl.espressif.com/dl/xtensa-lx106-elf-gcc8_4_0-esp-2020r3-linux-amd64.tar.gz
-
-    # Unzip xtensa-toolchain
-    rm -rf build
-    mkdir -p build
-    tar -xzf xtensa*.gz -C $(pwd)/build
-
-    # Remove remnant zip file
-    rm -rf xtensa-*.gz*
-
-    # Create or activate the virtual environment
-    create_or_activate_venv
-
-    # Install requirements.txt under ESP8266_RTOS_SDK directory
-    pip install -r ESP8266_RTOS_SDK/requirements.txt
-
-    # Add ESP IDF path to the venv permanently
-    echo "export IDF_PATH=${IDF_PATH}" >> .venv/bin/activate
-    echo "export PATH="$PATH:$(pwd)/build/xtensa-lx106-elf/bin"" >> .venv/bin/activate
-
+    ${IDF_PATH}/install.sh
+    . ${IDF_PATH}/export.sh
+       
 elif [ "$#" -eq 1 ] && [ "$1" != "install" ]; then
     usage
     exit 1
 else
-    # Create or activate the virtual environment if no argument is provided
-    create_or_activate_venv
+    # just export paths
+    . ./${IDF_PATH}/export.sh
 fi
 
 # Validate if PATH contains xtensa

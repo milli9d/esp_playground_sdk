@@ -12,6 +12,7 @@
 
 #include <esp_spi_flash.h>
 #include <esp_system.h>
+#include <esp_log.h>
 
 #include <driver/gpio.h>
 #include <driver/uart.h>
@@ -34,7 +35,7 @@ extern "C" {
  * @brief Application entry point
  *
  */
-void app_main()
+void app_main(void)
 {
     esp_log_level_set("*", ESP_LOG_VERBOSE);
 
@@ -56,7 +57,7 @@ void app_main()
 
     /* yield main task */
     while (1) {
-        vTaskDelay(1000 / portTICK_RATE_MS);
+        vTaskDelay(1000 / portTICK_PERIOD_MS);
     };
 }
 

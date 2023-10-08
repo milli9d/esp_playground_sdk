@@ -190,8 +190,10 @@ wifi_base::wifi_base()
     _s_wifi_event_group = xEventGroupCreate();
     ESP_ERROR_CHECK(esp_event_loop_create_default());
 
+#ifdef CONFIG_IDF_TARGET_ESP8266
     /* init TCP/IP adapter */
     tcpip_adapter_init();
+#endif
 
     /* init wifi */
     ESP_ERROR_CHECK(esp_wifi_init(&conf));
