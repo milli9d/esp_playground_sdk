@@ -31,8 +31,12 @@ export IDF_PATH="$(pwd)/ESP8266_RTOS_SDK"
 
 echo "IDF_PATH set to: ${IDF_PATH}"
 
+create_or_activate_venv
+
 # If "install" argument is passed, then download and install
 if [ "$#" -eq 1 ] && [ "$1" = "install" ]; then
+    sudo apt-get install git wget flex bison gperf python-is-python3 python3 python3-pip python3-venv cmake ninja-build ccache libffi-dev libssl-dev dfu-util libusb-1.0-0
+
     # Install and import ESP IDF tools
     ${IDF_PATH}/install.sh
     . ${IDF_PATH}/export.sh

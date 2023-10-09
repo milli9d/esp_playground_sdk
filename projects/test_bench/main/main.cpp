@@ -10,13 +10,14 @@
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
 
+#include <esp_log.h>
 #include <esp_spi_flash.h>
 #include <esp_system.h>
-#include <esp_log.h>
 
 #include <driver/gpio.h>
 #include <driver/uart.h>
 
+#include "espp_esp_now.hpp"
 #include "espp_wifi.hpp"
 #include "gpio_base.hpp"
 
@@ -54,6 +55,10 @@ void app_main(void)
 
     /* init wifi base */
     espp::wifi_base _wifi = espp::wifi_base();
+
+    _wifi.start();
+    espp::esp_now _esp_now = espp::esp_now();
+    _wifi.stop();
 
     /* yield main task */
     while (1) {

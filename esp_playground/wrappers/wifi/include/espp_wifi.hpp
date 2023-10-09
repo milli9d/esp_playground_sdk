@@ -61,6 +61,30 @@ class wifi_base
     static int _scan_ap_shell(int argc, char** argv);
 
     /**
+     * @brief Start AP shell command
+     * @param argc
+     * @param argv
+     * @return
+     */
+    static int _start_wifi_shell(int argc, char** argv);
+
+    /**
+     * @brief Stop AP shell command
+     * @param argc
+     * @param argv
+     * @return
+     */
+    static int _stop_wifi_shell(int argc, char** argv);
+
+    /**
+     * @brief Connect AP shell command
+     * @param argc
+     * @param argv      <SSID> <PSK>
+     * @return
+     */
+    static int _connect_ap(int argc, char** argv);
+
+    /**
      * @brief Init shell commands
      */
     void _init_shell();
@@ -86,7 +110,30 @@ class wifi_base
     /* Public API */
     /* ===================================================================== */
 
+
+    /**
+     * @brief 
+     * @param args 
+     */
+    static void thread_run(void* args);
+
+    /**
+     * @brief Wifi Scan APs
+     * @return
+     */
     esp_err_t scan_ap(void);
+
+    /**
+     * @brief Wifi start
+     * @return
+     */
+    esp_err_t start(void);
+
+    /**
+     * @brief Wifi stop
+     * @return
+     */
+    esp_err_t stop(void);
 };
 
 } // namespace espp

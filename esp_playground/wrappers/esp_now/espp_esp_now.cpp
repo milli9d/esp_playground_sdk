@@ -12,6 +12,7 @@
 #include <esp_err.h>
 #include <esp_event.h>
 #include <esp_netif.h>
+#include <esp_now.h>
 #include <esp_system.h>
 #include <esp_wifi.h>
 
@@ -24,9 +25,9 @@
 
 #define LOG_LOCAL_LEVEL ESP_LOG_VERBOSE
 #include <esp_log.h>
-#define ESPP_WIFI_BASE_TAG "ESP Wifi Base"
+#define ESPP_esp_now_TAG "ESP Wifi Base"
 
-#include "espp_wifi.hpp"
+#include "espp_esp_now.hpp"
 
 namespace espp {
 
@@ -40,9 +41,9 @@ namespace espp {
  * @param event_id
  * @param event_data
  */
-void wifi_base::_wifi_event_handler(void* arg, esp_event_base_t event_base, int32_t event_id, void* event_data)
+void esp_now::_wifi_event_handler(void* arg, esp_event_base_t event_base, int32_t event_id, void* event_data)
 {
-    ESP_LOGE(ESPP_WIFI_BASE_TAG, "%s: Not implemented", __func__);
+    ESP_LOGE(ESPP_esp_now_TAG, "%s: Not implemented", __func__);
 }
 
 /**
@@ -55,9 +56,9 @@ void wifi_base::_wifi_event_handler(void* arg, esp_event_base_t event_base, int3
  * @param event_id
  * @param event_data
  */
-void wifi_base::_ip_event_handler(void* arg, esp_event_base_t event_base, int32_t event_id, void* event_data)
+void esp_now::_ip_event_handler(void* arg, esp_event_base_t event_base, int32_t event_id, void* event_data)
 {
-    ESP_LOGE(ESPP_WIFI_BASE_TAG, "%s: Not implemented", __func__);
+    ESP_LOGE(ESPP_esp_now_TAG, "%s: Not implemented", __func__);
 }
 
 /* ========================================================================= */
@@ -67,43 +68,18 @@ void wifi_base::_ip_event_handler(void* arg, esp_event_base_t event_base, int32_
 /**
  * @brief Default constructor
  */
-wifi_base::wifi_base()
+esp_now::esp_now()
 {
-    /* bind default config to an rvalue */
-    wifi_init_config_t conf = WIFI_INIT_CONFIG_DEFAULT();
-
-    /* init WiFi Event Handlers group */
-    _s_wifi_event_group = xEventGroupCreate();
-    ESP_ERROR_CHECK(esp_event_loop_create_default());
-
-    /* init TCP/IP adapter */
-    // tcpip_adapter_init();
-
-    /* init wifi */
-    ESP_ERROR_CHECK(esp_wifi_init(&conf));
-
-    /* init WiFi event handlers */
-    ESP_ERROR_CHECK(esp_event_handler_register(WIFI_EVENT, ESP_EVENT_ANY_ID, _wifi_event_handler, NULL));
-    ESP_ERROR_CHECK(esp_event_handler_register(IP_EVENT, IP_EVENT_STA_GOT_IP, _ip_event_handler, NULL));
-
-    ESP_LOGI(ESPP_WIFI_BASE_TAG, "Wifi subsystem up!\n");
+    ESP_ERROR_CHECK_WITHOUT_ABORT(esp_wifi_start());
+    ESP_ERROR_CHECK_WITHOUT_ABORT(esp_now_init());
 }
 
 /**
  * @brief Default destructor
  */
-wifi_base::~wifi_base()
+esp_now::~esp_now()
 {
-    /* disconnect wifi */
-    ESP_ERROR_CHECK_WITHOUT_ABORT(esp_wifi_disconnect());
-
-    /* de-init wifi resources */
-    ESP_ERROR_CHECK_WITHOUT_ABORT(esp_wifi_deinit());
-
-    /* remove event group */
-    vEventGroupDelete(_s_wifi_event_group);
-
-    ESP_LOGI(ESPP_WIFI_BASE_TAG, "Wifi subsystem down!\n");
+    ESP_ERROR_CHECK_WITHOUT_ABORT(esp_wifi_stop());
 }
 
 } // namespace espp

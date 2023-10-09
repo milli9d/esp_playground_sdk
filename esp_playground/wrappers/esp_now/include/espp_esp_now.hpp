@@ -16,7 +16,7 @@
 
 namespace espp {
 
-class wifi_base
+class esp_now
 {
   private:
     /* ===================================================================== */
@@ -54,12 +54,12 @@ class wifi_base
     /**
      * @brief
      */
-    wifi_base();
+    esp_now();
 
     /**
      * @brief
      */
-    ~wifi_base();
+    ~esp_now();
 };
 
 } // namespace espp

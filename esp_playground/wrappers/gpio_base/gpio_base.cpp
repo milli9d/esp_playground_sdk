@@ -4,9 +4,9 @@
  *
  * This wrapper provides
  */
-#include <cstdio>
 #include <cstdbool>
 #include <cstdint>
+#include <cstdio>
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"

@@ -85,12 +85,91 @@ void wifi_base::_wifi_event_handler(void* arg, esp_event_base_t event_base, int3
  */
 void wifi_base::_ip_event_handler(void* arg, esp_event_base_t event_base, int32_t event_id, void* event_data)
 {
-    ESP_LOGE(ESPP_WIFI_BASE_TAG, "%s: Not implemented event_base = %s event_id = 0x%x", __func__, event_base, event_id);
+    switch (event_id) {
+        case IP_EVENT_STA_GOT_IP:
+            /* give control back to scan handler */
+            ESP_LOGI(ESPP_WIFI_BASE_TAG, "WiFi connected!");
+            break;
+
+        default:
+            ESP_LOGE(ESPP_WIFI_BASE_TAG, "%s: Not implemented event_base = %s event_id = 0x%x", __func__, event_base,
+                     event_id);
+            break;
+    }
+}
+
+/* ========================================================================= */
+/* WiFi Thread */
+/* ========================================================================= */
+
+void wifi_base::thread_run(void* args)
+{
+    while (1) {
+        vTaskDelay(500u / portTICK_PERIOD_MS);
+    }
 }
 
 /* ========================================================================= */
 /* Shell Commands */
 /* ========================================================================= */
+
+/**
+ * @brief Start AP shell command
+ * @param argc
+ * @param argv
+ * @return
+ */
+int wifi_base::_start_wifi_shell(int argc, char** argv)
+{
+    ESP_ERROR_CHECK(_this == NULL);
+    _this->start();
+    return 0;
+}
+
+/**
+ * @brief Stop AP shell command
+ * @param argc
+ * @param argv
+ * @return
+ */
+int wifi_base::_stop_wifi_shell(int argc, char** argv)
+{
+    ESP_ERROR_CHECK(_this == NULL);
+    _this->stop();
+    return 0;
+}
+
+/**
+ * @brief Connect AP shell command
+ * @param argc
+ * @param argv      <SSID> <PSK>
+ * @return
+ */
+int wifi_base::_connect_ap(int argc, char** argv)
+{
+    ESP_ERROR_CHECK(_this == NULL);
+
+    wifi_config_t wifi_config;
+
+    strcpy((char*)&wifi_config.sta.ssid[0u], argv[1]);
+    strcpy((char*)&wifi_config.sta.password[0u], argv[2]);
+
+    /* Setting a password implies station will connect to all security modes including WEP/WPA.
+     * However these modes are deprecated and not advisable to be used. Incase your Access point
+     * doesn't support WPA2, these mode can be enabled by commenting below line */
+
+    if (strlen((char*)wifi_config.sta.password)) {
+        wifi_config.sta.threshold.authmode = WIFI_AUTH_WPA2_PSK;
+    }
+
+    ESP_ERROR_CHECK_WITHOUT_ABORT(esp_wifi_set_mode(WIFI_MODE_STA));
+    ESP_ERROR_CHECK_WITHOUT_ABORT(esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_config));
+    ESP_ERROR_CHECK_WITHOUT_ABORT(esp_wifi_start());
+
+    ESP_LOGE(ESPP_WIFI_BASE_TAG, "%s : Connected to %s", __func__, wifi_config.sta.ssid);
+    return 0;
+}
+
 /**
  * @brief Scan AP shell command
  * @param argc
@@ -117,6 +196,24 @@ void wifi_base::_init_shell()
     cmd.func = &wifi_base::_scan_ap_shell;
 
     ESP_ERROR_CHECK_WITHOUT_ABORT(esp_console_cmd_register(&cmd));
+
+    cmd.command = "wifi_start";
+    cmd.help = "Start WiFi";
+    cmd.func = &wifi_base::_start_wifi_shell;
+
+    ESP_ERROR_CHECK_WITHOUT_ABORT(esp_console_cmd_register(&cmd));
+
+    cmd.command = "wifi_stop";
+    cmd.help = "Stop WiFi";
+    cmd.func = &wifi_base::_stop_wifi_shell;
+
+    ESP_ERROR_CHECK_WITHOUT_ABORT(esp_console_cmd_register(&cmd));
+
+    cmd.command = "wifi_connect";
+    cmd.help = "Wifi connect AP : wifi_connect <SSID> <PSK>";
+    cmd.func = &wifi_base::_connect_ap;
+
+    ESP_ERROR_CHECK_WITHOUT_ABORT(esp_console_cmd_register(&cmd));
 }
 
 /* ========================================================================= */
@@ -124,7 +221,29 @@ void wifi_base::_init_shell()
 /* ========================================================================= */
 
 /**
- * @brief
+ * @brief Wifi start
+ * @return
+ */
+esp_err_t wifi_base::start()
+{
+    esp_err_t ret = 0u;
+    ESP_ERROR_CHECK_WITHOUT_ABORT(ret = esp_wifi_start());
+    return ret;
+}
+
+/**
+ * @brief Wifi stop
+ * @return
+ */
+esp_err_t wifi_base::stop()
+{
+    esp_err_t ret = 0u;
+    ESP_ERROR_CHECK_WITHOUT_ABORT(ret = esp_wifi_stop());
+    return ret;
+}
+
+/**
+ * @brief Wifi Scan APs
  * @return
  */
 esp_err_t wifi_base::scan_ap()
@@ -200,10 +319,13 @@ wifi_base::wifi_base()
 
     /* init WiFi event handlers */
     ESP_ERROR_CHECK(esp_event_handler_register(WIFI_EVENT, ESP_EVENT_ANY_ID, _wifi_event_handler, NULL));
-    ESP_ERROR_CHECK(esp_event_handler_register(IP_EVENT, IP_EVENT_STA_GOT_IP, _ip_event_handler, NULL));
+    ESP_ERROR_CHECK(esp_event_handler_register(IP_EVENT, ESP_EVENT_ANY_ID, _ip_event_handler, NULL));
 
     /* initialize shell commands */
     _init_shell();
+
+    TaskHandle_t handle;
+    xTaskCreate(&this->thread_run, "Wifi", 1024u, NULL, 1u, &handle);
 
     ESP_LOGI(ESPP_WIFI_BASE_TAG, "Wifi subsystem up!");
 }

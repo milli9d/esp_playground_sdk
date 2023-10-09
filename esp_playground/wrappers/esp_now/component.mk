@@ -1,4 +1,4 @@
 #
-# "wifi" pseudo-component makefile.
+# "esp_now" pseudo-component makefile.
 #
 # (Uses default behaviour of compiling all source files in directory, adding 'include' to include path.)
