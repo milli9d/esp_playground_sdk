@@ -93,6 +93,7 @@ class wifi_base
     /* ===================================================================== */
     /* Constructors/Destructors */
     /* ===================================================================== */
+    static wifi_config_t _s_wifi_config;
     static SemaphoreHandle_t _wifi_scan_complete_sem;
     static wifi_base* _this;
 

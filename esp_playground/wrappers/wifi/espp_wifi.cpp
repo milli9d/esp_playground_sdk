@@ -35,7 +35,8 @@ namespace espp {
 
 /* @todo figure out a better way to do this */
 SemaphoreHandle_t wifi_base::_wifi_scan_complete_sem = xSemaphoreCreateBinary();
-wifi_base* espp::wifi_base::_this;
+wifi_base* espp::wifi_base::_this{};
+wifi_config_t espp::wifi_base::_s_wifi_config{};
 
 /**
  * @brief Handles wifi events
@@ -59,6 +60,15 @@ void wifi_base::_wifi_event_handler(void* arg, esp_event_base_t event_base, int3
         case WIFI_EVENT_STA_START:
             /* give control back to scan handler */
             ESP_LOGI(ESPP_WIFI_BASE_TAG, "WiFi STA Mode started!");
+            break;
+
+        case WIFI_EVENT_STA_DISCONNECTED:
+            ESP_LOGW(ESPP_WIFI_BASE_TAG, "WiFi Station disconnected from AP!");
+            esp_wifi_set_event_mask(WIFI_EVENT_STA_START);
+            break;
+
+        case WIFI_EVENT_STA_CONNECTED:
+            ESP_LOGI(ESPP_WIFI_BASE_TAG, "WiFi Station connected to AP!");
             break;
 
         case WIFI_EVENT_STA_STOP:
@@ -149,24 +159,26 @@ int wifi_base::_connect_ap(int argc, char** argv)
 {
     ESP_ERROR_CHECK(_this == NULL);
 
-    wifi_config_t wifi_config;
+    if (argc == 3u) {
 
-    strcpy((char*)&wifi_config.sta.ssid[0u], argv[1]);
-    strcpy((char*)&wifi_config.sta.password[0u], argv[2]);
+        strcpy((char*)&_s_wifi_config.sta.ssid[0u], argv[1]);
+        strcpy((char*)&_s_wifi_config.sta.password[0u], argv[2]);
 
-    /* Setting a password implies station will connect to all security modes including WEP/WPA.
-     * However these modes are deprecated and not advisable to be used. Incase your Access point
-     * doesn't support WPA2, these mode can be enabled by commenting below line */
+        /* Setting a password implies station will connect to all security modes including WEP/WPA.
+         * However these modes are deprecated and not advisable to be used. Incase your Access point
+         * doesn't support WPA2, these mode can be enabled by commenting below line */
 
-    if (strlen((char*)wifi_config.sta.password)) {
-        wifi_config.sta.threshold.authmode = WIFI_AUTH_WPA2_PSK;
+        if (strlen((char*)_s_wifi_config.sta.password)) {
+            _s_wifi_config.sta.threshold.authmode = WIFI_AUTH_WPA2_PSK;
+        }
+
+        ESP_ERROR_CHECK_WITHOUT_ABORT(esp_wifi_set_mode(WIFI_MODE_STA));
+        ESP_ERROR_CHECK_WITHOUT_ABORT(esp_wifi_set_config(ESP_IF_WIFI_STA, &_s_wifi_config));
     }
 
-    ESP_ERROR_CHECK_WITHOUT_ABORT(esp_wifi_set_mode(WIFI_MODE_STA));
-    ESP_ERROR_CHECK_WITHOUT_ABORT(esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_config));
     ESP_ERROR_CHECK_WITHOUT_ABORT(esp_wifi_start());
+    esp_wifi_connect();
 
-    ESP_LOGE(ESPP_WIFI_BASE_TAG, "%s : Connected to %s", __func__, wifi_config.sta.ssid);
     return 0;
 }
 
