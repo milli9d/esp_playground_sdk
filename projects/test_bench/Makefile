@@ -4,6 +4,7 @@
 #
 
 PROJECT_NAME := test_bench
+SDKCONFIG_DEFAULTS=$(PWD)/esp8266.defaults
 
 include $(PWD)/../../mk/esp_playground_init.mk
 include $(IDF_PATH)/make/project.mk

@@ -42,7 +42,7 @@ elif [ "$#" -eq 1 ] && [ "$1" != "install" ]; then
     exit 1
 else
     # just export paths
-    . ./${IDF_PATH}/export.sh
+    . ${IDF_PATH}/export.sh
 fi
 
 # Validate if PATH contains xtensa

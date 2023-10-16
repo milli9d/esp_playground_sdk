@@ -4,6 +4,7 @@
 #include <chrono>
 #include <cinttypes>
 #include <cstdio>
+#include <cinttypes>
 
 #include "smart_timer.hpp"
 
@@ -22,7 +23,7 @@ smart_timer::~smart_timer()
 
     uint32_t ms = std::chrono::duration_cast<std::chrono::milliseconds>(time_elapsed).count();
 
-    printf("%s took %d ms\n", _name.c_str(), ms);
+    printf("%s took%" PRId32 "ms\n", _name.c_str(), ms);
 }
 
 } // namespace espp

@@ -59,16 +59,18 @@ int espp_shell::_system_cmd_clear(int argc, char** argv)
 void espp_shell::_init_system_commands()
 {
     /* register reboot command */
-    esp_console_cmd_t rbt_cmd = { .command = "reboot",
-                              .help = "Reboot the system [Soft]",
-                              .func = &espp_shell::_system_cmd_reboot };
+    esp_console_cmd_t rbt_cmd{};
+    rbt_cmd.command = "reboot";
+    rbt_cmd.help = "Reboot the system [Soft]";
+    rbt_cmd.func = &espp_shell::_system_cmd_reboot;
 
     ESP_ERROR_CHECK_WITHOUT_ABORT(esp_console_cmd_register(&rbt_cmd));
 
     /* register clear command */
-    esp_console_cmd_t clr_cmd = { .command = "clear", 
-                                  .help = "Clear the shell", 
-                                  .func = &espp_shell::_system_cmd_clear };
+    esp_console_cmd_t clr_cmd{};
+    clr_cmd.command = "clear";
+    clr_cmd.help = "Clear the shell";
+    clr_cmd.func = &espp_shell::_system_cmd_clear;
 
     ESP_ERROR_CHECK_WITHOUT_ABORT(esp_console_cmd_register(&clr_cmd));
 }
@@ -77,8 +79,9 @@ void espp_shell::_init_system_commands()
 /* Private API */
 /* ========================================================================= */
 
+#ifdef CONFIG_IDF_TARGET_ESP8266
 /**
- * @brief Initialize UART
+ * @brief Initialize UART [ESP8266]
  * @param
  */
 void espp_shell::_init_uart(void)
@@ -89,6 +92,39 @@ void espp_shell::_init_uart(void)
     /* line ending settings (useful for navigation) */
     esp_vfs_dev_uart_set_rx_line_endings(ESP_LINE_ENDINGS_CR);
     esp_vfs_dev_uart_set_tx_line_endings(ESP_LINE_ENDINGS_CRLF);
+
+    /* Configure UART. Note that REF_TICK is used so that the baud rate remains
+     * correct while APB frequency is changing in light sleep mode.
+     */
+    uart_config_t uart_config{};
+    uart_config.baud_rate = CONFIG_ESP_CONSOLE_UART_BAUDRATE;
+    uart_config.data_bits = UART_DATA_8_BITS;
+    uart_config.parity = UART_PARITY_DISABLE;
+    uart_config.stop_bits = UART_STOP_BITS_1;
+
+    ESP_ERROR_CHECK_WITHOUT_ABORT(
+        uart_param_config(static_cast<uart_port_t>(CONFIG_ESP_CONSOLE_UART_NUM), &uart_config));
+
+    /* Install UART driver for interrupt-driven reads and writes */
+    ESP_ERROR_CHECK_WITHOUT_ABORT(
+        uart_driver_install(static_cast<uart_port_t>(CONFIG_ESP_CONSOLE_UART_NUM), 256, 0, 0, NULL, 0));
+
+    /* Tell VFS to use UART driver */
+    esp_vfs_dev_uart_use_driver(static_cast<uart_port_t>(CONFIG_ESP_CONSOLE_UART_NUM));
+}
+#else
+/**
+ * @brief Initialize UART
+ * @param
+ */
+void espp_shell::_init_uart(void)
+{
+    /* disable buffering on stdin */
+    setvbuf(stdin, NULL, _IONBF, 0);
+
+    /* line ending settings (useful for navigation) */
+    esp_vfs_dev_uart_port_set_rx_line_endings(CONFIG_ESP_CONSOLE_UART_NUM, ESP_LINE_ENDINGS_CR);
+    esp_vfs_dev_uart_port_set_tx_line_endings(CONFIG_ESP_CONSOLE_UART_NUM, ESP_LINE_ENDINGS_CRLF);
 
     /* Configure UART. Note that REF_TICK is used so that the baud rate remains
      * correct while APB frequency is changing in light sleep mode.
@@ -109,6 +145,7 @@ void espp_shell::_init_uart(void)
     /* Tell VFS to use UART driver */
     esp_vfs_dev_uart_use_driver(static_cast<uart_port_t>(CONFIG_ESP_CONSOLE_UART_NUM));
 }
+#endif
 
 /**
  * @brief Initialize console
