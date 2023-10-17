@@ -10,6 +10,7 @@ set(EXTRA_COMPONENT_DIRS
     ${CMAKE_CURRENT_SOURCE_DIR}/../../esp_playground/wrappers/
     ${CMAKE_CURRENT_SOURCE_DIR}/../../esp_playground/utils/
     ${CMAKE_CURRENT_SOURCE_DIR}/../../esp_playground/drivers/
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../esp_playground/common_libs/
 )
 
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)

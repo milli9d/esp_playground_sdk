@@ -26,6 +26,8 @@
 #include "led_thread.hpp"
 #include "smart_timer.hpp"
 
+#include "lvgl.h"
+
 #define MAIN_TAG "MAIN"
 
 #ifdef __cplusplus
@@ -48,7 +50,7 @@ void app_main(void)
 
     /* init a debug LED */
     espp::led_thread_sys_t int_led = { .delay_ms = 100u, .pin = gpio_num_t::GPIO_NUM_4, .handle = NULL };
-    xTaskCreate(espp::led_thread_run, "LED", 1024, (void*)&int_led, 2u, &int_led.handle);
+    xTaskCreate(espp::led_thread_run, "LED", 2048, (void*)&int_led, 2u, &int_led.handle);
 
     /* init shell */
     espp::espp_shell _shell;
