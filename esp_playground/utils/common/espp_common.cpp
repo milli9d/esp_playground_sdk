@@ -12,7 +12,8 @@
 #include <esp_spi_flash.h>
 #else
 #include <esp_chip_info.h>
-#include <spi_flash_mmap.h>
+#include <esp_spi_flash.h>
+// #include <spi_flash_mmap.h>
 #endif
 
 #define ESPP_COMMON_TAG "ESP Playground"

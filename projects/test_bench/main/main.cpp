@@ -26,6 +26,7 @@
 #include "led_thread.hpp"
 #include "smart_timer.hpp"
 
+#include "lv_examples.h"
 #include "lvgl.h"
 
 #define MAIN_TAG "MAIN"
@@ -34,12 +35,24 @@
 extern "C" {
 #endif
 
+/* ========================================================================= */
+/* LVGL demo */
+/* ========================================================================= */
+
+static void lvgl_demo(){
+    ESP_LOGI(MAIN_TAG, "LVGL Demo start");
+    ESP_LOGI(MAIN_TAG, "LVGL Demo end");
+}
+
+
 /**
  * @brief Application entry point
  *
  */
 void app_main(void)
 {
+    lv_init();
+
     esp_log_level_set("*", ESP_LOG_VERBOSE);
 
     /* pretty print intro */
@@ -55,12 +68,12 @@ void app_main(void)
     /* init shell */
     espp::espp_shell _shell;
 
-    /* init wifi base */
-    espp::wifi_base _wifi = espp::wifi_base();
+    // /* init wifi base */
+    // espp::wifi_base _wifi = espp::wifi_base();
 
-    _wifi.start();
-    espp::esp_now _esp_now = espp::esp_now();
-    _wifi.stop();
+    // _wifi.start();
+    // espp::esp_now _esp_now = espp::esp_now();
+    // _wifi.stop();
 
     /* yield main task */
     while (1) {

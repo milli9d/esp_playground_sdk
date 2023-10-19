@@ -173,7 +173,7 @@ int wifi_base::_connect_ap(int argc, char** argv)
         }
 
         ESP_ERROR_CHECK_WITHOUT_ABORT(esp_wifi_set_mode(WIFI_MODE_STA));
-        ESP_ERROR_CHECK_WITHOUT_ABORT(esp_wifi_set_config(ESP_IF_WIFI_STA, &_s_wifi_config));
+        ESP_ERROR_CHECK_WITHOUT_ABORT(esp_wifi_set_config(static_cast<wifi_interface_t>(ESP_IF_WIFI_STA), &_s_wifi_config));
     }
 
     ESP_ERROR_CHECK_WITHOUT_ABORT(esp_wifi_start());
